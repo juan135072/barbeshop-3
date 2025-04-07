@@ -12,8 +12,8 @@ export default async function Home() {
     {
       cookies: {
         get(name: string) {
-          // Ignore the TypeScript error on the next line as a workaround for Vercel build
-          // @ts-ignore
+          // Use @ts-expect-error as recommended by ESLint
+          // @ts-expect-error
           return cookieStore.get(name)?.value;
         },
       },
