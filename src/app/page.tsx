@@ -1,11 +1,14 @@
 import Image from "next/image";
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr'; // Client for Server Component rendering
 import { cookies } from 'next/headers';
 import type { Database } from '@/lib/database.types';
+import { createActionClient } from '@/lib/supabase/actions'; // Client for Server Actions
+import { redirect } from 'next/navigation'; // For redirecting after logout
 
 export default async function Home() {
   const cookieStore = cookies();
 
+  // Client for reading data in the Server Component
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -19,16 +22,41 @@ export default async function Home() {
     }
   );
 
-  // Get user session
   const { data: { user } } = await supabase.auth.getUser();
+
+  // --- Server Action for Logout ---
+  const signOut = async () => {
+    'use server'; // Mark this as a Server Action
+
+    const supabaseAction = createActionClient(); // Use the action client
+    await supabaseAction.auth.signOut();
+    return redirect('/login'); // Redirect to login page
+  };
+  // --- End Server Action ---
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-          <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-            {user ? `Logged in as: ${user.email}` : "Not logged in"}
-          </p>
+          {/* Display user status and logout button */} 
+          <div className="fixed left-0 top-0 flex w-full items-center justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
+             {user ? (
+              <div className="flex items-center gap-4">
+                <span>Logged in as: {user.email}</span>
+                <form action={signOut}>
+                  <button
+                    type="submit"
+                    className="rounded bg-red-500 px-3 py-1 text-xs text-white hover:bg-red-600"
+                  >
+                    Cerrar Sesión
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <span>Not logged in</span>
+            )}
+          </div>
+          {/* Keep Next.js Logo */}
           <Image
             className="dark:invert lg:relative lg:left-auto lg:top-auto lg:inline-block"
             src="/next.svg"
@@ -38,6 +66,7 @@ export default async function Home() {
             priority
           />
         </div>
+        {/* ... rest of the page content ... */}
         <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
           <li className="mb-2 tracking-[-.01em]">
             Get started by editing{" "}
@@ -51,8 +80,8 @@ export default async function Home() {
           </li>
         </ol>
         <div className="flex gap-4 items-center flex-col sm:flex-row">
-          {/* Deploy and docs links */}
-          <a
+         {/* Deploy and docs links */} 
+         <a
             className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
             href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
             target="_blank"
@@ -77,9 +106,9 @@ export default async function Home() {
           </a>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        {/* Footer links */}
-        <a
+       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+         {/* Footer links */} 
+         <a
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
           target="_blank"
