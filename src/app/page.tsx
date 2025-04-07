@@ -12,8 +12,7 @@ export default async function Home() {
     {
       cookies: {
         get(name: string) {
-          // Use @ts-expect-error as recommended by ESLint
-          // @ts-expect-error
+          // @ts-expect-error: Vercel build environment wrongly infers Promise type for cookieStore
           return cookieStore.get(name)?.value;
         },
       },
