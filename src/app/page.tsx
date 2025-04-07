@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { createServerClient } from '@supabase/ssr';
-import { cookies, type ReadonlyRequestCookies } from 'next/headers'; // Import the type
+import { cookies } from 'next/headers'; // No type import needed
 import type { Database } from '@/lib/database.types';
 
 export default async function Home() {
@@ -11,9 +11,10 @@ export default async function Home() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
+        // Define the 'get' function simply
         get(name: string) {
-          // Use type assertion to guide TypeScript
-          return (cookieStore as ReadonlyRequestCookies).get(name)?.value
+          // Trusting runtime behavior of cookieStore.get
+          return cookieStore.get(name)?.value;
         },
       },
     }
