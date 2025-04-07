@@ -1,9 +1,8 @@
 import Image from "next/image";
 // Import Supabase and cookies helpers from @supabase/ssr
-import { createServerClient } from '@supabase/ssr'; // Changed from createServerComponentClient
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from '@/lib/database.types';
-import type { CookieOptions } from '@supabase/ssr'; // Import CookieOptions if needed by createServerClient
 
 export default async function Home() {
   const cookieStore = cookies();
@@ -17,9 +16,7 @@ export default async function Home() {
         get(name: string) {
           return cookieStore.get(name)?.value
         },
-        // set and remove might not be needed here for read-only operations in Server Components
-        // If needed, implement similarly to middleware, but errors might occur
-        // if trying to set cookies directly in a Server Component render.
+        // No set/remove needed for read-only component
       },
     }
   );
