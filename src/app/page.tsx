@@ -1,19 +1,26 @@
 import Image from "next/image";
-// Import Supabase and cookies helpers directly
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+// Import Supabase and cookies helpers from @supabase/ssr
+import { createServerClient } from '@supabase/ssr'; // Changed from createServerComponentClient
 import { cookies } from 'next/headers';
 import type { Database } from '@/lib/database.types';
+import type { CookieOptions } from '@supabase/ssr'; // Import CookieOptions if needed by createServerClient
 
 export default async function Home() {
-  // Call cookies() directly within the Server Component
   const cookieStore = cookies();
 
-  // Create Supabase client directly here
-  const supabase = createServerComponentClient<Database>(
-    { cookies: () => cookieStore },
+  // Create Supabase server client using @supabase/ssr pattern
+  const supabase = createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        // set and remove might not be needed here for read-only operations in Server Components
+        // If needed, implement similarly to middleware, but errors might occur
+        // if trying to set cookies directly in a Server Component render.
+      },
     }
   );
 
