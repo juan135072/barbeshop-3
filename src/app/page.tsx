@@ -1,38 +1,42 @@
 import Image from "next/image";
-import { createServerClient } from '@supabase/ssr'; // Client for Server Component rendering
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from '@/lib/database.types';
-import { createActionClient } from '@/lib/supabase/actions'; // Client for Server Actions
-import { redirect } from 'next/navigation'; // For redirecting after logout
+import { createActionClient } from '@/lib/supabase/actions';
+import { redirect } from 'next/navigation';
 
 export default async function Home() {
   const cookieStore = cookies();
+  // console.log('[Local Debug] Cookies available:', cookieStore.getAll()); // Removed debug log
 
-  // Client for reading data in the Server Component
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
+          // console.log('[Local Debug] Attempting to get cookie:', name); // Removed debug log
           // @ts-expect-error: Vercel build environment wrongly infers Promise type for cookieStore
-          return cookieStore.get(name)?.value;
+          const value = cookieStore.get(name)?.value;
+          // console.log('[Local Debug] Got value:', value ? '***' : value); // Removed debug log
+          return value;
         },
       },
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // console.log('[Local Debug] Attempting supabase.auth.getUser()'); // Removed debug log
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
 
-  // --- Server Action for Logout ---
+  // Removed userError logging as it wasn't firing
+  // console.log('[Local Debug] User object received:', user ? { email: user.email, id: user.id } : null); // Removed debug log
+
   const signOut = async () => {
-    'use server'; // Mark this as a Server Action
-
-    const supabaseAction = createActionClient(); // Use the action client
+    'use server';
+    const supabaseAction = createActionClient();
     await supabaseAction.auth.signOut();
-    return redirect('/login'); // Redirect to login page
+    return redirect('/login');
   };
-  // --- End Server Action ---
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
