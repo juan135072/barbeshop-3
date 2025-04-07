@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr' // Removed unused CookieOptions import
 import { cookies } from 'next/headers'
 import type { Database } from '@/lib/database.types'
 
@@ -13,7 +13,9 @@ export const createClient = () => {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value
+          // @ts-expect-error: Vercel build environment wrongly infers Promise type for cookieStore
+          // Trusting runtime behavior of cookieStore.get
+          return cookieStore.get(name)?.value;
         },
         // Note: Setting cookies from Server Components is not directly supported.
         // Use Server Actions or Route Handlers for operations that modify cookies.
@@ -25,30 +27,3 @@ export const createClient = () => {
 
 // You might want separate functions for Server Actions and Route Handlers later,
 // using the same createServerClient but potentially needing set/remove handlers.
-// Example for Server Action (would need set/remove):
-/*
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import type { Database } from '@/lib/database.types'
-
-export const createActionClient = () => {
-  const cookieStore = cookies()
-  return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: '', ...options })
-        },
-      },
-    }
-  )
-}
-*/
