@@ -1,15 +1,33 @@
 'use client'
 
 import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client' // Import client-side client
+import { useRouter } from 'next/navigation' // Import router
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null) // State for error messages
+  const router = useRouter() // Initialize router
+  const supabase = createClient() // Create Supabase client instance
 
   const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    // TODO: Implement Supabase login logic here
-    console.log('Attempting login with:', { email, password })
+    setError(null) // Reset error before trying
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (signInError) {
+      console.error('Login Error:', signInError.message)
+      setError(signInError.message) // Set error message to display
+    } else {
+      // Redirect to home page on successful login
+      router.push('/')
+      router.refresh() // Refresh server components on the target page
+    }
   }
 
   return (
@@ -19,6 +37,7 @@ export default function LoginPage() {
           Iniciar Sesión
         </h1>
         <form onSubmit={handleLogin} className="space-y-6">
+          {/* Email Input */}
           <div>
             <label
               htmlFor="email"
@@ -37,8 +56,9 @@ export default function LoginPage() {
               placeholder="tu@email.com"
             />
           </div>
+          {/* Password Input */}
           <div>
-            <label
+             <label
               htmlFor="password"
               className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
             >
@@ -55,8 +75,17 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
           </div>
+
+          {/* Display Error Message */}
+          {error && (
+            <p className="text-center text-sm text-red-600 dark:text-red-400">
+              Error: {error}
+            </p>
+          )}
+
           <button
             type="submit"
+            // TODO: Add loading state indication to button
             className="w-full rounded-lg bg-blue-600 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           >
             Iniciar Sesión
